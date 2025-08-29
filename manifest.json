@@ -1,0 +1,17 @@
+{
+  "name": "Claude Code Design Bridge",
+  "id": "737805260747778092",
+  "api": "1.0.0",
+  "editorType": ["figma", "figjam"],
+  "main": "dist/main.js",
+  "ui": "dist/ui.html",
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": [
+      "http://localhost:3001"
+    ],
+    "devAllowedDomains": ["*"],
+    "reasoning": "Connect to local Claude Code MCP server for bidirectional design-code synchronization and real-time design creation from natural language instructions"
+  },
+  "permissions": ["currentuser", "activeusers"]
+}

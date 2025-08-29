@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Figma Plugin Interface</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 400px;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            background: #f0f0f0;
+        }
+        .status.connected {
+            background: #e8f5e8;
+            color: #2d5a2d;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #999;
+        }
+        .status.connected .status-dot {
+            background: #0fa958;
+        }
+        .button {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            background: #007AFF;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .button:hover {
+            background: #0056CC;
+        }
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin: 2px 0;
+        }
+        .log-entry.success {
+            color: #0fa958;
+        }
+        .log-entry.error {
+            color: #ff3333;
+        }
+        .log-entry.info {
+            color: #007AFF;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🎨 Claude Code Figma Plugin Test</h2>
+        
+        <div class="status" id="status">
+            <div class="status-dot"></div>
+            <span>Disconnected from MCP Server</span>
+        </div>
+        
+        <button class="button" onclick="testConnection()">🔌 Test MCP Connection</button>
+        <button class="button" onclick="testDesignExtraction()">📤 Test Design Extraction</button>
+        <button class="button" onclick="testCodeGeneration()">⚡ Test Code Generation</button>
+        <button class="button" onclick="testTokenSync()">🔄 Test Token Sync</button>
+        <button class="button" onclick="clearLog()">🧹 Clear Log</button>
+        
+        <h3>Activity Log:</h3>
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        let sessionId = `test-session-${Date.now()}`;
+        let connected = false;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateStatus(isConnected) {
+            connected = isConnected;
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${isConnected ? 'connected' : ''}`;
+            statusDiv.querySelector('span').textContent = isConnected 
+                ? 'Connected to MCP Server' 
+                : 'Disconnected from MCP Server';
+        }
+
+        async function testConnection() {
+            log('Testing MCP connection...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:3001/mcp-bridge/connect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sessionId: sessionId,
+                        pluginVersion: '1.0.0',
+                        timestamp: Date.now()
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    log(`✅ Connected successfully: ${result.message}`, 'success');
+                    updateStatus(true);
+                } else {
+                    log(`❌ Connection failed: ${result.error}`, 'error');
+                    updateStatus(false);
+                }
+            } catch (error) {
+                log(`❌ Connection error: ${error.message}`, 'error');
+                updateStatus(false);
+            }
+        }
+
+        async function testDesignExtraction() {
+            if (!connected) {
+                await testConnection();
+            }
+
+            log('Testing design extraction...', 'info');
+            
+            const mockDesignSpecs = [
+                {
+                    id: 'mock-button-1',
+                    name: 'Primary Button',
+                    type: 'button',
+                    properties: {
+                        dimensions: { width: 120, height: 40 },
+                        colors: { background: '#007AFF', text: '#ffffff' },
+                        typography: { family: 'Inter', size: 14, weight: 500 }
+                    }
+                },
+                {
+                    id: 'mock-card-1',
+                    name: 'Product Card',
+                    type: 'card',
+                    properties: {
+                        dimensions: { width: 280, height: 200 },
+                        colors: { background: '#ffffff', border: '#e1e1e1' },
+                        spacing: { padding: { top: 16, right: 16, bottom: 16, left: 16 } }
+                    }
+                }
+            ];
+
+            try {
+                const response = await fetch('http://localhost:3001/mcp-bridge/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'design-extracted',
+                        payload: {
+                            action: 'design-extracted',
+                            components: mockDesignSpecs,
+                            timestamp: Date.now()
+                        },
+                        sessionId: sessionId,
+                        timestamp: Date.now()
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    log(`✅ Design extraction successful: Processed ${result.data.processed} components`, 'success');
+                } else {
+                    log(`❌ Design extraction failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Design extraction error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCodeGeneration() {
+            if (!connected) {
+                await testConnection();
+            }
+
+            log('Testing code generation...', 'info');
+
+            try {
+                const response = await fetch('http://localhost:3001/mcp-bridge/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'generate-code',
+                        payload: {
+                            action: 'generate-code',
+                            designSpec: {
+                                framework: 'react',
+                                designSystem: 'tailwind',
+                                components: []
+                            },
+                            options: {
+                                includeTests: false,
+                                includeStorybook: false
+                            }
+                        },
+                        sessionId: sessionId,
+                        timestamp: Date.now()
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    log(`✅ Code generation successful: ${result.data.files.length} files generated`, 'success');
+                    log(`📝 Generated code preview: ${result.data.code.substring(0, 80)}...`, 'info');
+                } else {
+                    log(`❌ Code generation failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Code generation error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testTokenSync() {
+            if (!connected) {
+                await testConnection();
+            }
+
+            log('Testing design token sync...', 'info');
+
+            const mockTokens = {
+                colors: {
+                    primary: '#007AFF',
+                    secondary: '#34C759',
+                    background: '#ffffff',
+                    text: '#000000'
+                },
+                typography: {
+                    heading: { family: 'Inter', size: 24, weight: 600 },
+                    body: { family: 'Inter', size: 16, weight: 400 }
+                }
+            };
+
+            try {
+                const response = await fetch('http://localhost:3001/mcp-bridge/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'sync-tokens',
+                        payload: {
+                            action: 'sync-tokens',
+                            tokens: mockTokens
+                        },
+                        sessionId: sessionId,
+                        timestamp: Date.now()
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    log(`✅ Token sync successful: ${result.data.tokensSynced} tokens synced`, 'success');
+                } else {
+                    log(`❌ Token sync failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Token sync error: ${error.message}`, 'error');
+            }
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        // Initialize
+        log('🚀 Figma Plugin Test Interface loaded', 'info');
+        log('Click "Test MCP Connection" to begin testing', 'info');
+    </script>
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Claude Code Design Bridge</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.4;
+      background: var(--figma-color-bg);
+      color: var(--figma-color-text);
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--figma-color-border);
+    }
+    
+    .logo {
+      font-weight: 600;
+      font-size: 16px;
+    }
+    
+    .connection-status {
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+      gap: 6px;
+    }
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--figma-color-text-secondary);
+    }
+    
+    .status-dot.connected {
+      background: #0fa958;
+    }
+    
+    .section {
+      margin-bottom: 24px;
+    }
+    
+    .section-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--figma-color-text);
+    }
+    
+    .button {
+      background: var(--figma-color-bg-brand);
+      color: var(--figma-color-text-onbrand);
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    
+    .button:hover {
+      opacity: 0.9;
+    }
+    
+    .button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .button.secondary {
+      background: var(--figma-color-bg-secondary);
+      color: var(--figma-color-text);
+      border: 1px solid var(--figma-color-border);
+    }
+    
+    .select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--figma-color-border);
+      border-radius: 6px;
+      background: var(--figma-color-bg);
+      color: var(--figma-color-text);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    
+    .input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--figma-color-border);
+      border-radius: 6px;
+      background: var(--figma-color-bg);
+      color: var(--figma-color-text);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    
+    .textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 12px;
+      border: 1px solid var(--figma-color-border);
+      border-radius: 6px;
+      background: var(--figma-color-bg);
+      color: var(--figma-color-text);
+      font-family: 'SF Mono', Consolas, monospace;
+      font-size: 12px;
+      resize: vertical;
+      margin-bottom: 8px;
+    }
+    
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: var(--figma-color-text-secondary);
+    }
+    
+    .loading.visible {
+      display: block;
+    }
+    
+    .error {
+      background: var(--figma-color-bg-danger);
+      color: var(--figma-color-text-ondanger);
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    
+    .error.visible {
+      display: block;
+    }
+    
+    .selected-nodes {
+      background: var(--figma-color-bg-secondary);
+      border: 1px solid var(--figma-color-border);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+    
+    .node-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0;
+    }
+    
+    .node-type {
+      background: var(--figma-color-bg-brand);
+      color: var(--figma-color-text-onbrand);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 500;
+    }
+    
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--figma-color-border);
+      margin-bottom: 16px;
+    }
+    
+    .tab {
+      flex: 1;
+      padding: 8px 16px;
+      background: none;
+      border: none;
+      color: var(--figma-color-text-secondary);
+      cursor: pointer;
+      font-size: 14px;
+      border-bottom: 2px solid transparent;
+    }
+    
+    .tab.active {
+      color: var(--figma-color-text);
+      border-bottom-color: var(--figma-color-bg-brand);
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .ai-prompt {
+      width: 100%;
+      min-height: 80px;
+      padding: 12px;
+      border: 1px solid var(--figma-color-border);
+      border-radius: 6px;
+      background: var(--figma-color-bg);
+      color: var(--figma-color-text);
+      font-size: 14px;
+      resize: vertical;
+      margin-bottom: 12px;
+    }
+    
+    .checkbox-group {
+      margin-bottom: 12px;
+    }
+    
+    .checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .checkbox input {
+      margin: 0;
+    }
+    
+    .code-output {
+      background: var(--figma-color-bg-secondary);
+      border: 1px solid var(--figma-color-border);
+      border-radius: 6px;
+      padding: 12px;
+      margin-top: 12px;
+      display: none;
+    }
+    
+    .code-output.visible {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🎨 Claude Code</div>
+    <div class="connection-status">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Disconnected</span>
+    </div>
+  </div>
+
+  <div class="error" id="errorMessage"></div>
+  <div class="loading" id="loadingIndicator">⏳ Processing...</div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="extract">Extract</button>
+    <button class="tab" data-tab="generate">Generate</button>
+    <button class="tab" data-tab="create">Create</button>
+    <button class="tab" data-tab="settings">Settings</button>
+  </div>
+
+  <!-- Extract Tab -->
+  <div class="tab-content active" id="extract-tab">
+    <div class="section">
+      <div class="section-title">Selected Nodes</div>
+      <div class="selected-nodes" id="selectedNodes">
+        <div style="color: var(--figma-color-text-secondary); font-size: 12px;">
+          Select design elements to extract
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <button class="button" id="extractButton" disabled>
+        📤 Extract Design Specifications
+      </button>
+      <button class="button secondary" id="syncTokensButton">
+        🔄 Sync Design Tokens
+      </button>
+    </div>
+  </div>
+
+  <!-- Generate Tab -->
+  <div class="tab-content" id="generate-tab">
+    <div class="section">
+      <div class="section-title">Code Generation</div>
+      
+      <div class="settings-grid">
+        <select class="select" id="frameworkSelect">
+          <option value="react">React</option>
+          <option value="vue">Vue</option>
+          <option value="angular">Angular</option>
+          <option value="svelte">Svelte</option>
+          <option value="html">HTML/CSS</option>
+        </select>
+        
+        <select class="select" id="designSystemSelect">
+          <option value="tailwind">Tailwind CSS</option>
+          <option value="shadcn">shadcn/ui</option>
+          <option value="chakra">Chakra UI</option>
+          <option value="material">Material UI</option>
+          <option value="antd">Ant Design</option>
+          <option value="custom">Custom CSS</option>
+        </select>
+      </div>
+
+      <div class="checkbox-group">
+        <label class="checkbox">
+          <input type="checkbox" id="includeTests">
+          <span>Include Test Files</span>
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" id="includeStorybook">
+          <span>Include Storybook Stories</span>
+        </label>
+      </div>
+
+      <button class="button" id="generateCodeButton" disabled>
+        ⚡ Generate Code
+      </button>
+    </div>
+
+    <div class="code-output" id="codeOutput">
+      <div class="section-title">Generated Code</div>
+      <textarea class="textarea" id="codeTextarea" readonly></textarea>
+      <button class="button secondary" id="copyCodeButton">
+        📋 Copy to Clipboard
+      </button>
+    </div>
+  </div>
+
+  <!-- Create Tab -->
+  <div class="tab-content" id="create-tab">
+    <div class="section">
+      <div class="section-title">AI Design Creation</div>
+      
+      <textarea 
+        class="ai-prompt" 
+        id="aiPrompt" 
+        placeholder="Describe the component you want to create...&#10;&#10;Examples:&#10;• Create a login form with email, password fields and submit button&#10;• Design a pricing card with features list and CTA&#10;• Build a navigation header with logo and menu items"
+      ></textarea>
+      
+      <button class="button" id="createFromPromptButton">
+        ✨ Create from Prompt
+      </button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Design Suggestions</div>
+      <button class="button secondary" id="suggestImprovementsButton" disabled>
+        💡 Suggest Improvements
+      </button>
+      <button class="button secondary" id="checkAccessibilityButton" disabled>
+        ♿ Check Accessibility
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings Tab -->
+  <div class="tab-content" id="settings-tab">
+    <div class="section">
+      <div class="section-title">Connection</div>
+      <input 
+        class="input" 
+        id="serverUrlInput" 
+        placeholder="MCP Server URL" 
+        value="http://localhost:3001"
+      >
+      <button class="button" id="reconnectButton">
+        🔌 Reconnect to Claude Code
+      </button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Default Settings</div>
+      <select class="select" id="defaultFramework">
+        <option value="react">React</option>
+        <option value="vue">Vue</option>
+        <option value="angular">Angular</option>
+        <option value="svelte">Svelte</option>
+      </select>
+      
+      <select class="select" id="defaultDesignSystem">
+        <option value="tailwind">Tailwind CSS</option>
+        <option value="shadcn">shadcn/ui</option>
+        <option value="chakra">Chakra UI</option>
+        <option value="material">Material UI</option>
+        <option value="antd">Ant Design</option>
+      </select>
+    </div>
+
+    <div class="section">
+      <button class="button secondary" id="closePluginButton">
+        ✕ Close Plugin
+      </button>
+    </div>
+  </div>
+
+  <script src="ui.js"></script>
+</body>
+</html>

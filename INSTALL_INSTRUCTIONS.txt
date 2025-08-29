@@ -1,0 +1,24 @@
+🎨 CLAUDE CODE FIGMA PLUGIN - INSTALLATION INSTRUCTIONS
+
+📁 PLUGIN LOCATION: /Users/mami/projects/claude-code-figma-plugin/
+
+🔧 INSTALL IN FIGMA DESKTOP APP:
+
+1. Open Figma Desktop App
+2. Go to: Plugins → Development → Import plugin from manifest...
+3. Select file: manifest.json (in this folder)
+4. Click "Open"
+
+✅ Plugin will appear as "Claude Code Design Bridge"
+
+🎯 QUICK TEST:
+1. Create a rectangle in Figma (120×40px, blue color)
+2. Select the rectangle  
+3. Run plugin: Plugins → Claude Code Design Bridge
+4. Click "Extract Design Specifications"
+5. Switch to Generate tab → Click "Generate Code"
+
+📊 MCP SERVER STATUS: Running on localhost:3001
+🔗 Test Interface: file:///Users/mami/projects/claude-code-figma-plugin/test-plugin.html
+
+Ready to transform designs into code! 🚀
