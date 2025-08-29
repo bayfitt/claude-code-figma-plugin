@@ -33,6 +33,18 @@ No matter what you type, it creates:
 
 *These are hardcoded shapes, not AI-generated designs*
 
+## 🎬 Video Demonstration
+
+**Watch the plugin in action:** [demo-video.mov](./demo-video.mov)
+
+This screen recording (recorded 2025-08-29 at 1:31 PM) shows:
+- Natural language input being typed into the plugin
+- MCP server receiving and processing the requests  
+- Figma creating the hardcoded shapes (red circle, blue rectangle, text)
+- **Proof that the MCP → Figma pipeline works**, even though shapes are not intelligent yet
+
+*The video demonstrates the technical foundation is solid and ready for AI-powered shape generation integration.*
+
 ## 📦 Installation
 
 ### Prerequisites
