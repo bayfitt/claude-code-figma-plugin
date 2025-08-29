@@ -37,10 +37,10 @@ No matter what you type, it creates:
 
 **Watch the plugin in action:**
 
-<video width="800" controls>
-  <source src="./demo-video-compressed.mp4" type="video/mp4">
-  Your browser does not support the video tag. <a href="./demo-video-compressed.mp4">Download the demo video</a>
-</video>
+[![Demo Video Thumbnail](./demo-video-thumbnail.jpg)](./demo-video-compressed.mp4)
+
+> **📹 Click the thumbnail above to watch the demo video (409KB)**  
+> *Right-click and select "Save As" to download*
 
 This screen recording (recorded 2025-08-29 at 1:31 PM) shows:
 - Natural language input being typed into the plugin
