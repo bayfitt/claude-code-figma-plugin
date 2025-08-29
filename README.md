@@ -35,7 +35,7 @@ No matter what you type, it creates:
 
 ## 🎬 Video Demonstration
 
-**Watch the plugin in action:** [demo-video.mov](./demo-video.mov)
+**Watch the plugin in action:** [demo-video-compressed.mp4](./demo-video-compressed.mp4)
 
 This screen recording (recorded 2025-08-29 at 1:31 PM) shows:
 - Natural language input being typed into the plugin
